@@ -13,25 +13,20 @@ void insertion_sort_list(listint_t **list)
 	if (list == NULL || tmp->next == NULL)
 		return;
 
-	printf("before loop\n");
 	while (tmp != NULL)
 	{
-		printf("still in memory\n");
 		j = tmp->next;
 		i = tmp;
+		tmp = tmp->next;
 		if (j->n < i->n)
 		{
-			printf("entered if\n");
 			while ((i->prev != NULL) && (j->n < i->prev->n))
-			{
 				i = i->prev;
-			}
-			printf("i was moved, value of i: %d\n", i->n);
-			printf("j will be moved, value: %d\n", j->n);
 			insert_node(i, j, list);
 			print_list(*list);
 		}
-		tmp = tmp->next;
+		if (tmp->next == NULL)
+			break;
 	}
 }
 
@@ -45,26 +40,40 @@ void insertion_sort_list(listint_t **list)
 
 void insert_node(listint_t *i, listint_t *j, listint_t **list)
 {
-	printf("inserting\n");
-	if (j->next == NULL)
+	if (j->next == NULL && i->prev != NULL)
+	{
 		j->prev->next = NULL;
+		i->prev->next = j;
+		j->prev = i->prev;
+		i->prev = j;
+		j->next = i;
+	}
+	else if (j->next != NULL && i->prev == NULL)
+	{
+		j->prev->next = j->next;
+		j->next->prev = j->prev;
+		j->prev = NULL;
+		j->next = i;
+		i->prev = j;
+		*list = j;
+		(*list)->next = j->next;
+	}
+	else if (j->next == NULL && i->prev == NULL)
+	{
+		j->prev->next = NULL;
+		j->prev = NULL;
+		j->next = i;
+		i->prev = j;
+		*list = j;
+		(*list)->next = j->next;
+	}
 	else
 	{
 		j->prev->next = j->next;
 		j->next->prev = j->prev;
-	}
-	if (i->prev == NULL)
-	{
-		*list = j;
-		i->prev = j;
-		j->prev = NULL;
-		j->next = i;
-	}
-	else
-	{
-		i->prev->next = j;
 		j->prev = i->prev;
+		i->prev->next = j;
 		i->prev = j;
-		j->next = i;	
+		j->next = i;
 	}
 }
