@@ -5,94 +5,52 @@
   *
   * @list: Double pointer to head of list.
   *
-  * This function takes a doubly linked list and sorts it following
-  * the insertion sort algorithm. Insertion of nodes is done at an
-  * additional function that can be found below. The printing of
-  * the list is also done by an external function, although it is
-  * not in this file. It returns nothing, since the list is modified.
+  * This function parses a doubly linked list, and if the following element
+  * is smaller than the current element, they will swap places. Then the
+  * condition will be checked again with the previous node, until node is set
+  * in place. After that, it will continue traversing the list until the end.
   */
 
 void insertion_sort_list(listint_t **list)
 {
-	listint_t *i = NULL, *j = NULL, *tmp = *list;
+	listint_t *tmp = NULL, *aux = NULL;
+	int flag = 0;
 
-	/* Check parameters. */
-	if (list == NULL || tmp->next == NULL)
+	if (list == NULL || (*list)->next == NULL)
 		return;
 
-	/*
-	* Loop through list with tmp. J and I will be the nodes to
-	* move nodes, j pointing to the current node and i to the
-	* position said node will take. After assigning j and i, move
-	* tmp again to loop. Print list whenever a change is made, and
-	* check that tmp will move to a valid position.
-	*/
-	while (tmp != NULL)
+	tmp = *list;
+	while (tmp->next != NULL)
 	{
-		j = tmp->next;
-		i = tmp;
-		tmp = tmp->next;
-		if (j->n < i->n)
+		if (tmp->n > tmp->next->n)
 		{
-			while ((i->prev != NULL) && (j->n < i->prev->n))
-				i = i->prev;
-			insert_node(i, j, list);
+			tmp->next->prev = tmp->prev; /* detach tmp from list */
+			if (tmp->next->prev != NULL) /* node != head */
+				tmp->prev->next = tmp->next;
+			else
+				*list = tmp->next;
+			tmp->prev = tmp->next; /* attach tmp after following node */
+			tmp->next = tmp->next->next; /* moving next node backwards */
+			tmp->prev->next = tmp;
+			if (tmp->next) /* not last node */
+				tmp->next->prev = tmp;
+			tmp = tmp->prev;
 			print_list(*list);
+			if (tmp->prev && tmp->prev->n > tmp->n) /* swap again */
+			{
+				if (flag == 0)
+					aux = tmp->next;
+				flag = 1;
+				tmp = tmp->prev;
+				continue;
+			}
 		}
-		if (tmp->next == NULL)
-			break;
-	}
-}
-
-/**
-  * insert_node - Insert node at given position.
-  *
-  * @i: Pointer to node, insert will be to the previous pointer.
-  * @j: Node to insert.
-  * @list: Double pointer to the head of the list.
-  *
-  * The position the node should be in will be the prev of i.
-  */
-
-void insert_node(listint_t *i, listint_t *j, listint_t **list)
-{
-	if (j->next == NULL && i->prev != NULL)
-	{
-		/* Move last node to the middle of the list. */
-		j->prev->next = NULL;
-		i->prev->next = j;
-		j->prev = i->prev;
-		i->prev = j;
-		j->next = i;
-	}
-	else if (j->next != NULL && i->prev == NULL)
-	{
-		/* Move middle node to the beginning of the list. */
-		j->prev->next = j->next;
-		j->next->prev = j->prev;
-		j->prev = NULL;
-		j->next = i;
-		i->prev = j;
-		*list = j;
-		(*list)->next = j->next;
-	}
-	else if (j->next == NULL && i->prev == NULL)
-	{
-		/* Move last node to the beginning of the list. */
-		j->prev->next = NULL;
-		j->prev = NULL;
-		j->next = i;
-		i->prev = j;
-		*list = j;
-		(*list)->next = j->next;
-	}
-	else /* Move middle node to the middle of the list. */
-	{
-		j->prev->next = j->next;
-		j->next->prev = j->prev;
-		j->prev = i->prev;
-		i->prev->next = j;
-		i->prev = j;
-		j->next = i;
+		if (flag == 0) /* no swaps needed */
+			tmp = tmp->next;
+		else /* all swaps have been done, continue traversing list */
+		{
+			tmp = aux;
+			flag = 0;
+		}
 	}
 }
