@@ -1,56 +1,80 @@
 #include "sort.h"
 
 /**
-  * insertion_sort_list - Sort list with insertion method.
+  * insertion_sort_list - sort list with insertion method
   *
-  * @list: Double pointer to head of list.
-  *
-  * This function parses a doubly linked list, and if the following element
-  * is smaller than the current element, they will swap places. Then the
-  * condition will be checked again with the previous node, until node is set
-  * in place. After that, it will continue traversing the list until the end.
+  * @list: double pointer to head of list
   */
 
 void insertion_sort_list(listint_t **list)
 {
-	listint_t *tmp = NULL, *aux = NULL;
-	int flag = 0;
+	listint_t *i = NULL, *j = NULL, *tmp = NULL;
 
-	if (list == NULL || (*list)->next == NULL)
+	if (list == NULL || *list == NULL || (*list)->next == NULL)
 		return;
 
 	tmp = *list;
-	while (tmp->next != NULL)
+	while (tmp != NULL)
 	{
-		if (tmp->n > tmp->next->n)
+		j = tmp->next;
+		i = tmp;
+		tmp = tmp->next;
+		if (j->n < i->n)
 		{
-			tmp->next->prev = tmp->prev; /* detach tmp from list */
-			if (tmp->next->prev != NULL) /* node != head */
-				tmp->prev->next = tmp->next;
-			else
-				*list = tmp->next;
-			tmp->prev = tmp->next; /* attach tmp after following node */
-			tmp->next = tmp->next->next; /* moving next node backwards */
-			tmp->prev->next = tmp;
-			if (tmp->next) /* not last node */
-				tmp->next->prev = tmp;
-			tmp = tmp->prev;
+			while ((i->prev != NULL) && (j->n < i->prev->n))
+				i = i->prev;
+			insert_node(i, j, list);
 			print_list(*list);
-			if (tmp->prev && tmp->prev->n > tmp->n) /* swap again */
-			{
-				if (flag == 0)
-					aux = tmp->next;
-				flag = 1;
-				tmp = tmp->prev;
-				continue;
-			}
 		}
-		if (flag == 0) /* no swaps needed */
-			tmp = tmp->next;
-		else /* all swaps have been done, continue traversing list */
-		{
-			tmp = aux;
-			flag = 0;
-		}
+		if (tmp->next == NULL)
+			break;
+	}
+}
+
+/**
+  * insert_node - insert node and move j
+  *
+  * @i: pointer to node, insert to previous node
+  * @j: pointer to node to insert
+  * @list: double pointer to list
+  */
+
+void insert_node(listint_t *i, listint_t *j, listint_t **list)
+{
+	if (j->next == NULL && i->prev != NULL)
+	{
+		j->prev->next = NULL;
+		i->prev->next = j;
+		j->prev = i->prev;
+		i->prev = j;
+		j->next = i;
+	}
+	else if (j->next != NULL && i->prev == NULL)
+	{
+		j->prev->next = j->next;
+		j->next->prev = j->prev;
+		j->prev = NULL;
+		j->next = i;
+		i->prev = j;
+		*list = j;
+		(*list)->next = j->next;
+	}
+	else if (j->next == NULL && i->prev == NULL)
+	{
+		j->prev->next = NULL;
+		j->prev = NULL;
+		j->next = i;
+		i->prev = j;
+		*list = j;
+		(*list)->next = j->next;
+	}
+	else
+	{
+		j->prev->next = j->next;
+		j->next->prev = j->prev;
+		j->prev = i->prev;
+		i->prev->next = j;
+		i->prev = j;
+		j->next = i;
 	}
 }
